@@ -2,6 +2,10 @@
 import { View, Text, FlatList, TouchableOpacity } from 'react-native'
 import { Link } from 'expo-router'
 import { RootStackParamList } from '../types'
+import { useAuth } from '../context/AuthContext'
+
+
+
 
 // Define your groups data
 const groups = [
@@ -35,7 +39,7 @@ export default function HomeScreen() {
         renderItem={({ item }) => (
           <Link
             href={{
-              pathname: '/group/[id]',
+              pathname: '../group/[id]',
               params: { id: item.id },
             }}
             asChild

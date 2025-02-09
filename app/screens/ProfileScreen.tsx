@@ -1,5 +1,9 @@
 // screens/ProfileScreen.tsx
 import { Image, Text, View } from 'react-native'
+import Header from '../components/Header'
+import SwitchRow from '../components/SwitchRow'
+import user  from '../data/user'
+
 
 
 
