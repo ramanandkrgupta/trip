@@ -1,4 +1,4 @@
-// app/(tabs)/index.tsx
+// app/chats/index.tsx
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -21,11 +21,11 @@ interface Chat {
   isGroup?: boolean;
 }
 
-const TabsIndexScreen = () => {
+const ChatsScreen = () => {
   const [chats, setChats] = useState<Chat[]>([]);
   const router = useRouter();
 
-  // For now, we use sample data. Later, you can replace this with real data from your backend.
+  // For now, we use sample data.
   useEffect(() => {
     const sampleChats: Chat[] = [
       {
@@ -51,7 +51,6 @@ const TabsIndexScreen = () => {
     setChats(sampleChats);
   }, []);
 
-  // Renders each chat item.
   const renderItem = ({ item }: { item: Chat }) => (
     <Pressable
       style={styles.chatItem}
@@ -74,6 +73,11 @@ const TabsIndexScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Chats</Text>
+      </View>
+
       {/* Chat List */}
       <FlatList
         data={chats}
@@ -92,12 +96,21 @@ const TabsIndexScreen = () => {
   );
 };
 
-export default TabsIndexScreen;
+export default ChatsScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
+  container: { flex: 1, backgroundColor: "#fff" },
+  header: {
+    backgroundColor: "#0a7ea4",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  headerTitle: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
   },
   chatItem: {
     flexDirection: "row",
@@ -106,30 +119,12 @@ const styles = StyleSheet.create({
     borderBottomColor: "#eee",
     borderBottomWidth: 1,
   },
-  avatar: {
-    marginRight: 12,
-  },
-  avatarImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-  },
-  chatInfo: {
-    flex: 1,
-  },
-  chatName: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  chatLastMessage: {
-    fontSize: 14,
-    color: "#888",
-    marginTop: 4,
-  },
-  chatTimestamp: {
-    fontSize: 12,
-    color: "#888",
-  },
+  avatar: { marginRight: 12 },
+  avatarImage: { width: 48, height: 48, borderRadius: 24 },
+  chatInfo: { flex: 1 },
+  chatName: { fontSize: 16, fontWeight: "bold" },
+  chatLastMessage: { fontSize: 14, color: "#888", marginTop: 4 },
+  chatTimestamp: { fontSize: 12, color: "#888" },
   fab: {
     position: "absolute",
     bottom: 24,
