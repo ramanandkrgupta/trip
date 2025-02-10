@@ -4,24 +4,21 @@
  * @module
  */
 
-import { 
+import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
   updateProfile,
   User,
-  UserCredential
-} from 'firebase/auth';
-import { auth } from './firebase-config';
+  UserCredential,
+} from "firebase/auth";
+import { auth, firestore } from "../lib/firebase-config"; // Ensure firestore is exported from firebase-config
+import { doc, getDoc } from "firebase/firestore";
 
 // ============================================================================
 // Types & Interfaces
 // ============================================================================
 
-/**
- * User response structure from Firebase Authentication
- * @interface
- */
 export interface FirebaseUserResponse {
   user: User;
 }
@@ -30,12 +27,6 @@ export interface FirebaseUserResponse {
 // Authentication Services
 // ============================================================================
 
-/**
- * Retrieves the current authenticated user and their session
- * Utilizes Firebase's onAuthStateChanged to provide real-time auth state
- * @returns {Promise<{ user: User | null }>} Current user object or null
- * @throws {Error} If there's an error accessing Firebase Auth
- */
 export const getCurrentUser = async () => {
   try {
     return new Promise((resolve) => {
@@ -50,21 +41,14 @@ export const getCurrentUser = async () => {
   }
 };
 
-/**
- * Authenticates a user with email and password
- * @param {string} email - User's email address
- * @param {string} password - User's password
- * @returns {Promise<FirebaseUserResponse | undefined>} Authenticated user data
- * @throws {Error} If authentication fails
- */
 export async function login(
-  email: string, 
+  email: string,
   password: string
 ): Promise<FirebaseUserResponse | undefined> {
   try {
     const userCredential: UserCredential = await signInWithEmailAndPassword(
-      auth, 
-      email, 
+      auth,
+      email,
       password
     );
     return { user: userCredential.user };
@@ -74,11 +58,6 @@ export async function login(
   }
 }
 
-/**
- * Logs out the current user by terminating their session
- * @returns {Promise<void>}
- * @throws {Error} If logout fails
- */
 export async function logout(): Promise<void> {
   try {
     await signOut(auth);
@@ -88,21 +67,17 @@ export async function logout(): Promise<void> {
   }
 }
 
-/**
- * Creates a new user account and optionally sets their display name
- * @param {string} email - User's email address
- * @param {string} password - User's password
- * @param {string} [name] - Optional user's display name
- * @returns {Promise<FirebaseUserResponse | undefined>} Created user data
- * @throws {Error} If registration fails
- */
 export async function register(
   email: string,
   password: string,
   name?: string
 ): Promise<FirebaseUserResponse | undefined> {
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
     if (name) {
       await updateProfile(userCredential.user, { displayName: name });
     }
@@ -110,5 +85,27 @@ export async function register(
   } catch (e) {
     console.error("[error registering] ==>", e);
     throw e;
+  }
+}
+
+/**
+ * Retrieves the user's profile data from the Firestore database.
+ * Assumes you have a "users" collection with documents keyed by the user's UID.
+ * @param {string} uid - The user's UID.
+ * @returns {Promise<any>} The user's profile data.
+ */
+export async function getUserProfile(uid: string): Promise<any> {
+  try {
+    const docRef = doc(firestore, "users", uid);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      console.error("No user profile found for UID:", uid);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting user profile:", error);
+    throw error;
   }
 }

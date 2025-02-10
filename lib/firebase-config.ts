@@ -4,17 +4,17 @@
  * @module
  */
 import { initializeApp } from "firebase/app";
-
-// IGNORE IMPORT ERROR, this is a valid import, still investigating
 import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
+// Import Firestore initialization function.
+import { getFirestore } from "firebase/firestore";
 
 // ============================================================================
 // Configuration
 // ============================================================================
 
 /**
- * Firebase configuration object containing necessary credentials and endpoints
+ * Firebase configuration object containing necessary credentials and endpoints.
  * @type {Object}
  */
 const firebaseConfig = {
@@ -31,18 +31,28 @@ const firebaseConfig = {
 // ============================================================================
 
 /**
- * Initialize Firebase application instance
+ * Initialize Firebase application instance.
  * @type {FirebaseApp}
  */
 const app = initializeApp(firebaseConfig);
 
 /**
- * Initialize Firebase Authentication service
+ * Initialize Firebase Authentication service.
  * @type {Auth}
  */
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
 });
 
-export { auth };
+/**
+ * Initialize Firestore.
+ * @type {Firestore}
+ */
+const firestore = getFirestore(app);
+
+// ============================================================================
+// Exports
+// ============================================================================
+
+export { auth, firestore };
 export default app;
