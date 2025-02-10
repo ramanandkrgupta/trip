@@ -2,8 +2,6 @@
 
 A modern authentication application built with [Expo](https://expo.dev), featuring a complete authentication flow using [Firebase](https://firebase.google.com/docs) as the backend service.
 
-## Video Walkthrough
-- 🎥 https://youtu.be/Yva2Ep717v0?si=R_FhSdTMjMsJUViW
 
 ## Features
 
