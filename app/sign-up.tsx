@@ -1,52 +1,49 @@
 import { router, Link } from "expo-router";
-import { Text, TextInput, View, Pressable } from "react-native";
+import {
+  Text,
+  TextInput,
+  View,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 import { useState } from "react";
 import { useSession } from "@/context";
 
-/**
- * SignUp component handles new user registration
- * @returns {JSX.Element} Sign-up form component
- */
 export default function SignUp() {
-  // ============================================================================
-  // Hooks & State
-  // ============================================================================
-  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [redirectMessage, setRedirectMessage] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const { signUp } = useSession();
 
-  // ============================================================================
-  // Handlers
-  // ============================================================================
-
-  /**
-   * Handles the registration process
-   * @returns {Promise<Models.User<Models.Preferences> | null>}
-   */
-  const handleRegister = async () => {
-    try {
-      return await signUp(email, password, name);
-    } catch (err) {
-      console.log("[handleRegister] ==>", err);
-      return null;
-    }
-  };
-
-  /**
-   * Handles the sign-up button press
-   */
   const handleSignUpPress = async () => {
-    const resp = await handleRegister();
-    if (resp) {
-      router.replace("/(app)/(drawer)/(tabs)/");
+    setIsProcessing(true);
+    try {
+      const resp = await signUp(email, password, name);
+      if (resp) {
+        // Successful registration—navigate to the app's main area
+        router.replace("/(app)/(drawer)/(tabs)/");
+      }
+    } catch (error: any) {
+      // If the email is already registered, show a message above the button
+      if (error.code === "auth/email-already-in-use") {
+        setRedirectMessage(
+          "Email already registered. Redirecting to Sign In..."
+        );
+        setTimeout(() => {
+          router.replace("/sign-in");
+        }, 1500);
+      } else {
+        setRedirectMessage("An error occurred. Please try again.");
+        setTimeout(() => {
+          setRedirectMessage("");
+        }, 1500);
+      }
+    } finally {
+      setIsProcessing(false);
     }
   };
-
-  // ============================================================================
-  // Render
-  // ============================================================================
 
   return (
     <View className="flex-1 justify-center items-center p-4">
@@ -55,9 +52,7 @@ export default function SignUp() {
         <Text className="text-2xl font-bold text-gray-800 mb-2">
           Create Account
         </Text>
-        <Text className="text-sm text-gray-500">
-          Sign up to get started
-        </Text>
+        <Text className="text-sm text-gray-500">Sign up to get started</Text>
       </View>
 
       {/* Form Section */}
@@ -75,7 +70,6 @@ export default function SignUp() {
             className="w-full p-3 border border-gray-300 rounded-lg text-base bg-white"
           />
         </View>
-
         <View>
           <Text className="text-sm font-medium text-gray-700 mb-1 ml-1">
             Email
@@ -90,7 +84,6 @@ export default function SignUp() {
             className="w-full p-3 border border-gray-300 rounded-lg text-base bg-white"
           />
         </View>
-
         <View>
           <Text className="text-sm font-medium text-gray-700 mb-1 ml-1">
             Password
@@ -106,14 +99,26 @@ export default function SignUp() {
         </View>
       </View>
 
+      {/* Redirect/Status Message Above the Button */}
+      {redirectMessage ? (
+        <Text className="text-gray-700 text-center mb-4">
+          {redirectMessage}
+        </Text>
+      ) : null}
+
       {/* Sign Up Button */}
       <Pressable
         onPress={handleSignUpPress}
+        disabled={isProcessing}
         className="bg-blue-600 w-full max-w-[300px] py-3 rounded-lg active:bg-blue-700"
       >
-        <Text className="text-white font-semibold text-base text-center">
-          Sign Up
-        </Text>
+        {isProcessing ? (
+          <ActivityIndicator color="#ffffff" />
+        ) : (
+          <Text className="text-white font-semibold text-base text-center">
+            Sign Up
+          </Text>
+        )}
       </Pressable>
 
       {/* Sign In Link */}

@@ -1,0 +1,97 @@
+// app/chat/[id].tsx
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TextInput, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
+
+interface Message {
+  id: string;
+  text?: string;
+  sender: 'me' | 'other';
+  timestamp: string;
+}
+
+const ChatScreen = () => {
+  // This hook gives you access to the parameters from the URL.
+  const { id } = useLocalSearchParams();
+  const [messages, setMessages] = useState<Message[]>([
+    { id: '1', text: 'Hello!', sender: 'other', timestamp: '10:00 AM' },
+    { id: '2', text: 'Hi, how are you?', sender: 'me', timestamp: '10:01 AM' },
+  ]);
+  const [input, setInput] = useState('');
+  const navigation = useNavigation();
+
+  const sendMessage = () => {
+    if (input.trim().length === 0) return;
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      text: input,
+      sender: 'me',
+      timestamp: 'Now',
+    };
+    setMessages([...messages, newMessage]);
+    setInput('');
+  };
+
+  const renderItem = ({ item }: { item: Message }) => {
+    const isMe = item.sender === 'me';
+    return (
+      <View
+        style={[
+          styles.messageContainer,
+          isMe ? styles.messageRight : styles.messageLeft,
+        ]}
+      >
+        <Text style={[styles.messageText, isMe && { color: '#fff' }]}>
+          {item.text}
+        </Text>
+        <Text style={styles.messageTimestamp}>{item.timestamp}</Text>
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>Chat ID: {id}</Text>
+      <FlatList
+        data={messages}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.messagesList}
+      />
+      <View style={styles.inputContainer}>
+        <Pressable onPress={() => { /* open emoji picker */ }}>
+          <Ionicons name="happy-outline" size={28} color="#888" style={{ marginHorizontal: 8 }} />
+        </Pressable>
+        <TextInput
+          style={styles.textInput}
+          placeholder="Type a message"
+          value={input}
+          onChangeText={setInput}
+        />
+        <Pressable onPress={() => { /* handle attachment */ }}>
+          <Ionicons name="attach" size={24} color="#888" style={{ marginHorizontal: 8 }} />
+        </Pressable>
+        <Pressable onPress={sendMessage} style={styles.sendButton}>
+          <Ionicons name="send" size={24} color="#fff" />
+        </Pressable>
+      </View>
+    </View>
+  );
+};
+
+export default ChatScreen;
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#fff' },
+  header: { fontSize: 18, fontWeight: 'bold', padding: 16 },
+  messagesList: { padding: 16 },
+  messageContainer: { marginVertical: 4, maxWidth: '70%', borderRadius: 10, padding: 8 },
+  messageLeft: { backgroundColor: '#eee', alignSelf: 'flex-start' },
+  messageRight: { backgroundColor: '#0a7ea4', alignSelf: 'flex-end' },
+  messageText: { fontSize: 16, color: '#000' },
+  messageTimestamp: { fontSize: 10, color: '#666', textAlign: 'right' },
+  inputContainer: { flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderColor: '#ddd', padding: 8 },
+  textInput: { flex: 1, fontSize: 16, paddingVertical: 8, paddingHorizontal: 12, backgroundColor: '#f0f0f0', borderRadius: 20 },
+  sendButton: { backgroundColor: '#0a7ea4', borderRadius: 20, padding: 10, marginLeft: 8 },
+});

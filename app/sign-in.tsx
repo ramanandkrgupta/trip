@@ -1,50 +1,59 @@
 import { router, Link } from "expo-router";
-import { Text, TextInput, View, Pressable } from "react-native";
+import {
+  Text,
+  TextInput,
+  View,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 import { useState } from "react";
 import { useSession } from "@/context";
 
-/**
- * SignIn component handles user authentication through email and password
- * @returns {JSX.Element} Sign-in form component
- */
 export default function SignIn() {
   // ============================================================================
   // Hooks & State
   // ============================================================================
-  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [redirectMessage, setRedirectMessage] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const { signIn } = useSession();
 
   // ============================================================================
   // Handlers
   // ============================================================================
-
-  /**
-   * Handles the sign-in process
-   * @returns {Promise<Models.User<Models.Preferences> | null>}
-   */
-  const handleLogin = async () => {
-    try {
-      return await signIn(email, password);
-    } catch (err) {
-      console.log("[handleLogin] ==>", err);
-      return null;
-    }
-  };
-
-  /**
-   * Handles the sign-in button press
-   */
   const handleSignInPress = async () => {
-    const resp = await handleLogin();
-    router.replace("/(app)/(drawer)/(tabs)/");
+    setIsProcessing(true);
+    try {
+      const resp = await signIn(email, password);
+      if (resp) {
+        // Successful sign in — navigate to the main area
+        router.replace("/(app)/(drawer)/(tabs)/");
+      }
+    } catch (error: any) {
+      // Check for both "user not found" and "invalid credential" errors
+      if (
+        error.code === "auth/user-not-found" ||
+        error.code === "auth/invalid-credential"
+      ) {
+        setRedirectMessage("User not found. Redirecting to Sign Up...");
+        setTimeout(() => {
+          router.replace("/sign-up");
+        }, 1500);
+      } else {
+        setRedirectMessage("An error occurred. Please try again.");
+        setTimeout(() => {
+          setRedirectMessage("");
+        }, 1500);
+      }
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // ============================================================================
   // Render
   // ============================================================================
-
   return (
     <View className="flex-1 justify-center items-center p-4">
       {/* Welcome Section */}
@@ -73,7 +82,6 @@ export default function SignIn() {
             className="w-full p-3 border border-gray-300 rounded-lg text-base bg-white"
           />
         </View>
-
         <View>
           <Text className="text-sm font-medium text-gray-700 mb-1 ml-1">
             Password
@@ -89,14 +97,26 @@ export default function SignIn() {
         </View>
       </View>
 
+      {/* Redirect/Status Message (shown above the button) */}
+      {redirectMessage ? (
+        <Text className="text-gray-700 text-center mb-4">
+          {redirectMessage}
+        </Text>
+      ) : null}
+
       {/* Sign In Button */}
       <Pressable
         onPress={handleSignInPress}
+        disabled={isProcessing}
         className="bg-blue-600 w-full max-w-[300px] py-3 rounded-lg active:bg-blue-700"
       >
-        <Text className="text-white font-semibold text-base text-center">
-          Sign In
-        </Text>
+        {isProcessing ? (
+          <ActivityIndicator color="#ffffff" />
+        ) : (
+          <Text className="text-white font-semibold text-base text-center">
+            Sign In
+          </Text>
+        )}
       </Pressable>
 
       {/* Sign Up Link */}
